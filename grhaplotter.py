@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
-
+import argparse
+import numpy as np
+import matplotlib.colors as mcolors
 
 def add_custom_arrow(ax, start, end, y, height=0.4, head_length=1.0,
                      color="steelblue", label=None):
@@ -36,26 +38,70 @@ def add_custom_arrow(ax, start, end, y, height=0.4, head_length=1.0,
                 color='white', fontweight='bold', zorder=3)
 
 
-# --- Plot Setup ---
-fig, ax = plt.subplots(figsize=(10, 3))
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename")
 
-arrows_data = [
-    {"start": 1, "end": 5, "y": 1, "color": "#4C72B0", "label": "Gene A"},
-    {"start": 8, "end": 6, "y": 1, "color": "#C44E52", "label": "Gene B"},
-    {"start": 6.5, "end": 9, "y": 2, "color": "#55A868", "label": "Gene C"}
-]
+    args = parser.parse_args()
+    filename = args.filename
 
-for arr in arrows_data:
-    add_custom_arrow(ax, **arr)
+    node_lengths = {}
+    haplotypes = []
+    haplotype_to_idx = {}
 
-ax.set_xlim(0, 10)
-ax.set_ylim(0, 3)
-ax.set_yticks([1, 2])
-ax.set_yticklabels(["Track 1", "Track 2"])
-ax.set_xlabel("Genomic Position")
+    with open(filename) as f:
+        for line in f:
+            if not line:
+                continue
+            marker = line[0]
 
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
+            if marker == 'S':
+                fields = line.strip().split("\t")
+                name = fields[1]
+                length = len(fields[2])
+                node_lengths[name] = length
+            elif marker == 'P':
+                fields = line.strip().split("\t")
+                haplotype = list(map(lambda x: (x[:-1], True) if x[-1] == '+' else (x[:-1], False),fields[2].split(",")))
+                haplotype_key = tuple(haplotype)
+                if haplotype_key not in haplotype_to_idx:        
+                    haplotypes.append(haplotype)
+                    haplotype_to_idx[haplotype_key] = len(haplotypes) - 1
 
-plt.tight_layout()
-plt.show()
+    unique_ids = list(node_lengths.keys())
+    num_ids = len(unique_ids)
+    cmap = plt.get_cmap('nipy_spectral')
+    sampled_colors = cmap(np.linspace(0, 1, num_ids))
+    color_dict = {id_name: mcolors.to_hex(sampled_colors[i]) for i, id_name in enumerate(unique_ids)}
+
+    _, ax = plt.subplots(figsize=(10, 10))
+
+    max_x = 0
+    for h_idx, haplotype in enumerate(haplotypes):
+        pos = 0
+        for node, orientation in haplotype:
+            next_pos = pos + node_lengths[node]
+            if orientation:
+                start = pos
+                end = next_pos
+            else:
+                start = next_pos
+                end = pos
+            if end > max_x:
+                max_x = end
+            add_custom_arrow(ax, start, end, h_idx + 1, color=color_dict[node], label=node)
+            pos = next_pos
+
+    ax.set_xlabel("Genomic Position")
+    ax.set_xlim(0, max_x)
+    ax.set_ylim(len(haplotypes) + 1, 0)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()

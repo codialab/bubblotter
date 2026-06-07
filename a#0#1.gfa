@@ -1,0 +1,37 @@
+S	4	AAAAAAAAAAA	LN:i:11	
+L	4	-	3	-	0M
+L	4	-	9	+	0M
+L	4	-	7	-	0M
+L	4	+	5	+	0M
+L	4	+	6	+	0M
+L	4	+	2	-	0M
+S	6	AAAAAAAA	LN:i:8	
+L	6	-	9	-	0M
+L	6	-	5	-	0M
+L	6	-	4	-	0M
+S	7	AAAA	LN:i:4	
+L	7	-	3	-	0M
+L	7	+	4	+	0M
+S	3	AA	LN:i:2	
+L	3	-	5	+	0M
+L	3	-	8	-	0M
+L	3	-	2	-	0M
+L	3	+	7	+	0M
+L	3	+	4	+	0M
+S	2	AAAAA	LN:i:5	
+L	2	-	1	-	0M
+L	2	+	3	+	0M
+L	2	+	4	-	0M
+S	8	AAAAAA	LN:i:6	
+L	8	-	1	-	0M
+L	8	+	3	+	0M
+S	1	AAA	LN:i:3	
+L	1	+	2	+	0M
+L	1	+	8	+	0M
+S	9	AAAAA	LN:i:5	
+L	9	-	4	+	0M
+L	9	+	6	+	0M
+S	5	A	LN:i:1	
+L	5	-	3	+	0M
+L	5	-	4	-	0M
+L	5	+	6	+	0M
