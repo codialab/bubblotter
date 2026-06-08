@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import logging
+from logging import log
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 import argparse
@@ -47,6 +49,7 @@ def rev_node(node):
 
 
 def main():
+    log = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
 
@@ -77,6 +80,8 @@ def main():
                 print(start, end, haplotype[0], haplotype[-1])
                 if rev_node(haplotype[-1]) in start or rev_node(haplotype[0]) in end:                    
                     haplotype = reverse(haplotype)
+                elif haplotype[0] not in start and haplotype[-1] not in end:
+                    log.warning(f"Could not orient haplotype: {fields[1]}")
                 if haplotype[0] not in start:
                     start.add(haplotype[0])
                 if haplotype[-1] not in end:
