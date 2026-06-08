@@ -38,6 +38,14 @@ def add_custom_arrow(ax, start, end, y, height=0.4, head_length=1.0,
                 color='white', fontweight='bold', zorder=3)
 
 
+def reverse(sequence):
+    return list(map(lambda x: (x[0], not x[1]), sequence[::-1]))
+
+
+def rev_node(node):
+    return (node[0], not node[1])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
@@ -48,6 +56,8 @@ def main():
     node_lengths = {}
     haplotypes = []
     haplotype_to_idx = {}
+    start = set()
+    end = set()
 
     with open(filename) as f:
         for line in f:
@@ -63,6 +73,14 @@ def main():
             elif marker == 'P':
                 fields = line.strip().split("\t")
                 haplotype = list(map(lambda x: (x[:-1], True) if x[-1] == '+' else (x[:-1], False),fields[2].split(",")))
+                # Sequence is backward
+                print(start, end, haplotype[0], haplotype[-1])
+                if rev_node(haplotype[-1]) in start or rev_node(haplotype[0]) in end:                    
+                    haplotype = reverse(haplotype)
+                if haplotype[0] not in start:
+                    start.add(haplotype[0])
+                if haplotype[-1] not in end:
+                    end.add(haplotype[-1])
                 haplotype_key = tuple(haplotype)
                 if haplotype_key not in haplotype_to_idx:        
                     haplotypes.append(haplotype)
