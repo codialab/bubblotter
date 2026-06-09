@@ -9,6 +9,22 @@ import re
 import json
 import random
 from scipy.cluster.hierarchy import linkage, leaves_list
+from collections import Counter
+
+
+def get_core_nodes(haplotypes, threshold=0.9):
+    total_haps = len(haplotypes)
+    min_required = total_haps * threshold
+
+    # 1. Count occurrences
+    # We use set(hap) so that if a node appears twice in the *same* haplotype,
+    # it only counts as 1 presence for that haplotype.
+    node_counts = Counter(node for hap in haplotypes for node in set(hap))
+
+    # 2. Filter based on the threshold
+    core_nodes = [node for node, count in node_counts.items() if count > min_required]
+
+    return core_nodes
 
 
 def calculate_distance(hap1, hap2):
@@ -214,7 +230,7 @@ def main():
 
     sorted_haps = sort_haplotypes_by_similarity(haplotypes)
 
-    print(anchors)
+    print(get_core_nodes(haplotypes, threshold=0.95))
 
     _, ax = plt.subplots(figsize=(10, 10))
 
