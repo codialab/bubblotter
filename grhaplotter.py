@@ -22,7 +22,7 @@ def get_core_nodes(haplotypes, threshold=0.9):
     node_counts = Counter(node for hap in haplotypes for node in set(hap))
 
     # 2. Filter based on the threshold
-    core_nodes = [node for node, count in node_counts.items() if count > min_required]
+    core_nodes = [node for node, count in node_counts.most_common() if count > min_required]
 
     return core_nodes
 
