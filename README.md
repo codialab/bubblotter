@@ -24,6 +24,7 @@ In this case `roi.gfa` is the region of interest graph, `work` the name of the w
 
 This results in multiple plots like:
 
+![Plot showing a region of the MAFA gene in three different forms: once as a gene-arrow like haplotype visualization, once as a graph and once in a minimap of the whole inputted region with exon/gene annotations](docs/MAFA_c20.gfa_412-451.gfa.png)
 
 * non-simple bubbles are by-default all bubbles that are not:
 - bubbles containing 4 or less nodes, only of length 1 (likely some form of SNP or 1bp INS/DEL)
