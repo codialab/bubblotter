@@ -170,7 +170,7 @@ def get_haplotypes(filename, bubble_chains=None):
                     haplotype = [(node[1:],
                                   True) if node[0] == '>' else (node[1:],
                                                                 False) for node in nodes]
-                    name = fields[1]
+                    name = f"{fields[1]}#{fields[2]}#{fields[3]}"
 
                 if bubble_chains is not None:
                     haplotype = apply_complex_replacements(haplotype,
@@ -232,6 +232,13 @@ def draw_plot(filename, annotations, full_coords,
     reference_idx = next((h_id for h_id, (names, _haplo) in enumerate(haplotypes) if reference is not None and reference != "" and any(s.startswith(reference) for s in names)), 0)
     sorted_haps = sort_with_reference(haplotypes,
                                       reference_index=reference_idx)
+
+    text_file = f"{filename}.tsv"
+    with open(text_file, "w") as f:
+        f.write("path\tgroup_id\n")
+        for h_id, (names, _haplo) in enumerate(haplotypes):
+            for name in names:
+                f.write(f"{name}\t{h_id}\n")
 
     if not plot_bandage:
         fig, ax = plt.subplots(figsize=(10, 10))
