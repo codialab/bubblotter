@@ -51,6 +51,8 @@ def sort_haplotypes_by_similarity(haplotypes):
 
 
 def sort_with_reference(haplotypes, reference_index=0):
+    if len(haplotypes) <= 1:
+        return haplotypes
     if len(haplotypes) <= 2:
         ref = haplotypes.pop(reference_index)
         return [ref] + haplotypes
@@ -204,6 +206,10 @@ def draw_plot(filename, annotations, full_coords,
     if output_filename is None:
         output_filename = f"{filename}.png"
     (haplotypes, node_lengths) = get_haplotypes(filename)
+
+    if len(haplotypes) == 0:
+        log.warning(f"No haplotypes for bubble {full_coords}")
+        return
 
     unique_ids = list(node_lengths.keys())
     random.shuffle(unique_ids)
