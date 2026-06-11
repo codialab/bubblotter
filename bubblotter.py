@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon, Rectangle
+from matplotlib.patches import Polygon, Rectangle, Patch
 import matplotlib.image as mpimg
 from matplotlib.gridspec import GridSpec
 import argparse
@@ -11,6 +11,7 @@ import re
 import json
 import random
 import os
+from matplotlib.ticker import ScalarFormatter
 from scipy.cluster.hierarchy import linkage, leaves_list
 import subprocess
 from pathlib import Path
@@ -18,6 +19,37 @@ import colorsys
 
 
 log = logging.getLogger(__name__)
+
+
+class GenomicFormatter(ScalarFormatter):
+    def __init__(self):
+        super().__init__(useOffset=True, useMathText=False)
+
+    def __call__(self, x, pos=None):
+        tick_val = x - self.offset
+
+        if tick_val == 0:
+            return "0"
+
+        return f"{tick_val / 1000:g} kb"
+
+    def get_offset(self):
+        """Formats the offset text placed at the end of the axis."""
+        if not self.offset:
+            return ""
+
+        if self.offset > 1_000_000:
+            mb_val = self.offset / 1_000_000
+
+            sign = "+" if mb_val > 0 else ""
+            return f"{sign}{mb_val:g} Mb"
+        elif self.offset > 1_000:
+            kb_val = self.offset / 1_000_000
+
+            sign = "+" if kb_val > 0 else ""
+            return f"{sign}{kb_val:g} kb"
+        else:
+            return f"{self.offset}"
 
 
 def hsv_to_hex(h, s, v):
@@ -272,13 +304,20 @@ def draw_plot(filename, annotations, full_coords,
                                     1, color=color, zorder=order))
         ax2.add_patch(Rectangle((reference_start, -0.5),
                                 reference_end - reference_start,
-                                1, color='r', zorder=5))
+                                1, facecolor='none', edgecolor='r', lw=3, zorder=5))
         ax2.spines['top'].set_visible(False)
         ax2.spines['right'].set_visible(False)
         ax2.spines['left'].set_visible(False)
         ax2.yaxis.set_visible(False)
         ax2.set_xlim(full_coords[0], full_coords[1])
 
+        ax2.xaxis.set_major_formatter(GenomicFormatter())
+
+
+        legend_elements = [Patch(color='#cccccc', label='Gene'),
+                           Patch(color='#555555', label='Exon'),
+                           Patch(facecolor='none', edgecolor='r', lw=3, label='Current Bubble') ]
+        ax2.legend(handles=legend_elements, loc='center right', bbox_to_anchor=(-0.01, 0.5), frameon=False,)
         img = mpimg.imread(bandage_image)
         ax1.imshow(img)
         ax1.axis('off')
@@ -458,8 +497,8 @@ def main():
             # Check if we are in a subbubble
             if "parent" in bubble:
                 continue
-            # Check if this is an insertion or deletion
-            if not include_ins and bubble_end - bubble_start <= 2:
+            # Check if this is a small insertion or deletion
+            if not include_ins and bubble_end - bubble_start <= 2 and node_lengths[str(bubble_start + 1)] < 50:
                 continue
             # Check if this is a small bubble consisting of only 1bp nodes
             if bubble_end - bubble_start <= 5:
