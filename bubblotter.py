@@ -179,6 +179,7 @@ def get_haplotypes(filename, bubble_chains=None):
         for ends, replacement in replacements:
             node_lengths[replacement[0]] = 10
 
+    first = True
     with open(filename) as f:
         for line in f:
             if not line:
@@ -210,7 +211,7 @@ def get_haplotypes(filename, bubble_chains=None):
                 # Sequence is backward
                 if rev_node(haplotype[-1]) in start or rev_node(haplotype[0]) in end:
                     haplotype = reverse(haplotype)
-                elif haplotype[0] not in start and haplotype[-1] not in end:
+                elif haplotype[0] not in start and haplotype[-1] not in end and not first:
                     log.warning(f"Could not orient haplotype: {fields[1]}")
 
                 if haplotype[0] not in start:
@@ -224,6 +225,7 @@ def get_haplotypes(filename, bubble_chains=None):
                 else:
                     haplotype_idx = haplotype_to_idx[haplotype_key]
                     haplotypes[haplotype_idx][0].append(name)
+                first = False
     return (haplotypes, node_lengths)
 
 
@@ -441,6 +443,12 @@ def main():
     reference_annotation = args.reference_annotation
     reference_seq_id = args.reference_seq_id
     include_ins = args.include_ins
+
+    if not reference:
+        log.warning("WARNING: running without a reference. This won't show you where bubbles are located. To specify a reference sequence use the '-r' parameter")
+
+    if reference_annotation and not reference_seq_id:
+        log.warning("WARNING: using reference annotation without specifying the chromosome to use. Are you sure you want to plot all annotations of every chromosome in the annotation file?")
 
     reference_start, reference_end = get_reference_coords(filename, reference)
 
