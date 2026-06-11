@@ -45,7 +45,7 @@ This example requires that `vg` is installed. It should usually be installed as 
 This example showcases how you can plot all of the bubbles in the MAFA gene of the human HPRCv2.1 MC graphs. 
 
 ```bash
-# Download the reference annotation and ungzip it
+# Download the reference annotation and un-gzip it
 wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_50/gencode.v50.basic.annotation.gff3.gz
 gunzip gencode.v50.basic.annotation.gff3.gz
 
