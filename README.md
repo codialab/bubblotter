@@ -1,5 +1,5 @@
 # bubblotter
-Simple tool for plotting bubbles within a GFA file.
+Simple tool for plotting SV bubbles within a GFA file.
 
 ## Usage
 Requirements:
