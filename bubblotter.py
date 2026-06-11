@@ -25,10 +25,9 @@ def hsv_to_hex(h, s, v):
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def calculate_distance(hap1, hap2):
-    mismatches = sum(1 for a, b in zip(hap1, hap2) if a != b)
-    mismatches += abs(len(hap1) - len(hap2))
-
+def calculate_distance(haplotype_1, haplotype_2):
+    mismatches = sum(1 for a, b in zip(haplotype_1, haplotype_2) if a != b)
+    mismatches += abs(len(haplotype_1) - len(haplotype_2))
     return mismatches
 
 
@@ -44,8 +43,8 @@ def sort_haplotypes_by_similarity(haplotypes):
     distances = np.array(distances)
     if np.all(distances == 0):
         return haplotypes
-    Z = linkage(distances, method='average', optimal_ordering=True)
-    sorted_indices = leaves_list(Z)
+    linkages = linkage(distances, method='average', optimal_ordering=True)
+    sorted_indices = leaves_list(linkages)
     sorted_haplotypes = [haplotypes[i] for i in sorted_indices]
     return sorted_haplotypes
 
@@ -63,9 +62,12 @@ def sort_with_reference(haplotypes, reference_index=0):
 
     sorted_others = sort_haplotypes_by_similarity(others)
 
+    # Calculate the distances of the reference group to the ends of
+    # the ordering
     dist_to_start = calculate_distance(reference, sorted_others[0])
     dist_to_end = calculate_distance(reference, sorted_others[-1])
 
+    # If the end is closer, flip the ordering
     if dist_to_end < dist_to_start:
         sorted_others.reverse()
 
@@ -73,7 +75,7 @@ def sort_with_reference(haplotypes, reference_index=0):
 
 
 def add_custom_arrow(ax, start, end, y, height=0.4, head_length=1.0,
-                     color="steelblue", label=None):
+                     color="black", label=None):
     direction = 1 if end > start else -1
 
     actual_head_length = min(head_length, abs(end - start)) * direction
@@ -82,11 +84,11 @@ def add_custom_arrow(ax, start, end, y, height=0.4, head_length=1.0,
     half_h = height / 2
 
     vertices = [
-        (start, y - half_h),      # Bottom start
-        (tail_end, y - half_h),   # Bottom of head base
-        (end, y),                 # Arrow tip
-        (tail_end, y + half_h),   # Top of head base
-        (start, y + half_h)       # Top start
+        (start, y - half_h),
+        (tail_end, y - half_h),
+        (end, y),
+        (tail_end, y + half_h),
+        (start, y + half_h)
     ]
     poly = Polygon(vertices, facecolor=color, edgecolor='black', linewidth=1,
                    zorder=2)
@@ -112,26 +114,20 @@ def apply_complex_replacements(haplotype, replacement_rules):
         try:
             idx1 = next(i for i, val in enumerate(haplotype) if val[0] == borders[0])
             idx2 = next(i for i, val in enumerate(haplotype) if val[0] == borders[1])
-
             start_idx = min(idx1, idx2)
             end_idx = max(idx1, idx2)
-
             if start_idx == idx1:
                 operations.append((start_idx, end_idx, new_value))
             else:
                 operations.append((start_idx, end_idx, (new_value[0],
                                                         not new_value[1])))
-
         except StopIteration:
             continue
 
     operations.sort(key=lambda x: x[0], reverse=True)
-
     new_haplotype = haplotype.copy()
-
     for start_idx, end_idx, new_value in operations:
         new_haplotype[start_idx:end_idx + 1] = [new_value]
-
     return new_haplotype
 
 
