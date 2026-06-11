@@ -37,4 +37,24 @@ The `work` directory also contains `.tsv` files containing which haplotype is pa
 
 \* non-simple bubbles are by-default all bubbles that are not:
 - bubbles containing 4 or less nodes, all of length 1 (likely some form of SNP or 1bp INS/DEL)
-- bubbles containing a single insertion or deletion (can be turned back on using the parameter `--include_ins`)
+- bubbles containing a single insertion or deletion that is less than 50 bps in length (can be turned back on using the parameter `--include_ins`)
+
+## Full example
+This example requires that `vg` is installed. It should usually be installed as a requirement of `bubblotter`, but if its not use `conda install -c bioconda vg` to install it.
+
+This example showcases how you can plot all of the bubbles in the MAFA gene of the human HPRCv2.1 MC graphs. 
+
+```bash
+# Download the reference annotation and ungzip it
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_50/gencode.v50.basic.annotation.gff3.gz
+gunzip gencode.v50.basic.annotation.gff3.gz
+
+# Download the HPRC minigraph cactus graph for chromosome 8
+wget https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/scratch/2025_12_23_minigraph_cactus/hprc-v2.1-mc-grch38/chrom-alignments/chr8.vg
+
+# Extract the region of interest
+vg chunk -x chr8.vg -p "GRCh38#0#chr8:143419191-143430700" -c 20 -O gfa > MAFA_c20.gfa
+
+# Run bubblotter
+bubblotter MAFA_c20.gfa work -r GRCh38 -a gencode.v50.basic.annotation.gff3 -s "chr8"
+```
