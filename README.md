@@ -29,7 +29,7 @@ This results in multiple plots like:
 
 Each plot shows on the left side a gene-arrow-like haplotype plot, each line consisting of all the haplotypes (paths) that have the same sequence in this bubble. Each arrow is a single node, the direction indicating the direction of the node traversal. The top-most
 line is always the group of haplotypes containing the reference (if a reference is specified). The start and end nodes of the bubble are marked in bright green and red respectively. The right side contains a plot of the graph generated using Bandage, the colors matched
-to the left plot. Below these plots is a minimap showing the position of this bubble in the graph given to `bubblotter` in terms of reference coordinates. If an annotation is given, then this minimap also shows the location of genes in light grey and exons in dark grey.
+to the left plot. Below these plots is a minimap showing the position of this bubble (red) in the graph given to `bubblotter` in terms of reference coordinates. If an annotation is given, then this minimap also shows the location of genes in light grey and exons in dark grey.
 
 \* non-simple bubbles are by-default all bubbles that are not:
 - bubbles containing 4 or less nodes, only of length 1 (likely some form of SNP or 1bp INS/DEL)
