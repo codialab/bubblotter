@@ -9,6 +9,7 @@ Requirements:
   - matplotlib
 - [vg](https://github.com/vgteam/vg)
 - [Bandage](https://github.com/rrwick/Bandage)
+- [BubbleGun](https://github.com/fawaz-dabbaghieh/bubble_gun) (optional, used for smoothing bubbles)
 
 Subset the graph to your region of interest, e.g. a single gene. This is important as `bubblotter` will try to draw every non-simple* top-level bubble within the graph. So inputting a large file will result in many images. This can be done for example like:
 ```bash
