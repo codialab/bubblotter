@@ -195,11 +195,11 @@ def get_haplotypes(filename: str):
 
 
 def draw_plot(filename, annotations, full_coords,
-              start_node, end_node, remove_snps,
+              start_node, end_node, remove_snps, file_format,
               reference="", reference_start=0, reference_end=0,
               output_filename=None, plot_bandage=True):
     if output_filename is None:
-        output_filename = f"{filename}.png"
+        output_filename = f"{filename}.{file_format}"
     (haplotypes, node_lengths) = get_haplotypes(filename)
 
     if len(haplotypes) == 0:
@@ -410,6 +410,7 @@ def main():
                         help="seqid in the GFF3 annotation of the reference")
     parser.add_argument("-i", "--include_ins", action="store_true", help="If this is set simple insertions and deletions (so ins/dels consisting of only a single node) will be plotted as well")
     parser.add_argument("-m", "--smooth", action="store_true", help="Smoothes paths in the bubble by replacing all chains of SNPs with a single node. This can result in nicer and more stream-lined plots, while removing information.")
+    parser.add_argument("-f", "--format", default='png', help="File format the images should be stored as, one of 'png', 'ps', 'pdf', 'svg'. Default is 'png'")
 
     args = parser.parse_args()
     filename = args.filename
@@ -419,6 +420,7 @@ def main():
     reference_seq_id = args.reference_seq_id
     include_ins = args.include_ins
     remove_snps = args.smooth
+    file_format = args.format
 
     if not reference:
         log.warning("WARNING: running without a reference. This won't show you where bubbles are located. To specify a reference sequence use the '-r' parameter")
@@ -523,10 +525,10 @@ def main():
             with open(simplified_file, "w") as f:
                 text = simplify_file(chunk_file)
                 f.write(text)
-            draw_plot(simplified_file, annotations, (reference_start, reference_end), nodes[0], nodes[1], remove_snps, reference=reference,
+            draw_plot(simplified_file, annotations, (reference_start, reference_end), nodes[0], nodes[1], remove_snps, file_format, reference=reference,
                       reference_start=start, reference_end=end)
         else:
-            draw_plot(chunk_file, annotations, (reference_start, reference_end), nodes[0], nodes[1], remove_snps, reference=reference,
+            draw_plot(chunk_file, annotations, (reference_start, reference_end), nodes[0], nodes[1], remove_snps, file_format, reference=reference,
                       reference_start=start, reference_end=end)
 
 
