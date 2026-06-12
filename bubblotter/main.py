@@ -16,7 +16,7 @@ from scipy.cluster.hierarchy import linkage, leaves_list
 import subprocess
 from pathlib import Path
 import colorsys
-from simplify_graph import simplify_file
+from .simplify_graph import simplify_file
 
 
 log = logging.getLogger(__name__)
