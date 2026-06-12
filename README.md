@@ -40,6 +40,18 @@ The `work` directory also contains `.tsv` files containing which haplotype is pa
 - bubbles containing 4 or less nodes, all of length 1 (likely some form of SNP or 1bp INS/DEL)
 - bubbles containing a single insertion or deletion that is less than 50 bps in length (can be turned back on using the parameter `--include_ins`)
 
+## Installation
+
+### From source
+```bash
+# Clone the repository
+git clone https://github.com/codialab/bubblotter.git
+cd bubblotter
+
+# Install it
+pip install .
+```
+
 ## Full example
 This example requires that `vg` is installed. It should usually be installed as a requirement of `bubblotter`, but if its not use `conda install -c bioconda vg` to install it.
 
