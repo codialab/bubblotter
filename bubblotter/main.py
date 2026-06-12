@@ -17,6 +17,7 @@ import subprocess
 from pathlib import Path
 import colorsys
 from .simplify_graph import simplify_file
+import importlib.metadata
 
 
 log = logging.getLogger(__name__)
@@ -410,6 +411,9 @@ def main():
     parser.add_argument("-i", "--include_ins", action="store_true", help="If this is set simple insertions and deletions (so ins/dels consisting of only a single node) will be plotted as well")
     parser.add_argument("-m", "--smooth", action="store_true", help="Smoothes paths in the bubble by replacing all chains of SNPs with a single node. This can result in nicer and more stream-lined plots, while removing information.")
     parser.add_argument("-f", "--format", default='png', help="File format the images should be stored as, one of 'png', 'ps', 'pdf', 'svg'. Default is 'png'")
+    version = importlib.metadata.version("bubblotter")
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {version}'.format(version=version))
 
     args = parser.parse_args()
     filename = args.filename
