@@ -16,6 +16,7 @@ from scipy.cluster.hierarchy import linkage, leaves_list
 import subprocess
 from pathlib import Path
 import colorsys
+from simplify_graph import simplify_file
 
 
 log = logging.getLogger(__name__)
@@ -139,45 +140,12 @@ def rev_node(node):
     return (node[0], not node[1])
 
 
-def apply_complex_replacements(haplotype, replacement_rules):
-    operations = []
-
-    for borders, new_value in replacement_rules:
-        try:
-            idx1 = next(i for i, val in enumerate(haplotype) if val[0] == borders[0])
-            idx2 = next(i for i, val in enumerate(haplotype) if val[0] == borders[1])
-            start_idx = min(idx1, idx2)
-            end_idx = max(idx1, idx2)
-            if start_idx == idx1:
-                operations.append((start_idx, end_idx, new_value))
-            else:
-                operations.append((start_idx, end_idx, (new_value[0],
-                                                        not new_value[1])))
-        except StopIteration:
-            continue
-
-    operations.sort(key=lambda x: x[0], reverse=True)
-    new_haplotype = haplotype.copy()
-    for start_idx, end_idx, new_value in operations:
-        new_haplotype[start_idx:end_idx + 1] = [new_value]
-    return new_haplotype
-
-
-def get_haplotypes(filename, bubble_chains=None):
+def get_haplotypes(filename: str):
     node_lengths = {}
     haplotypes = []
     haplotype_to_idx = {}
     start = set()
     end = set()
-
-    if bubble_chains is not None:
-        chains = json.load(open(bubble_chains))
-        replacements = [(chain['ends'],
-                         (f"C{key}",
-                          True)) for (key, chain) in chains.items()]
-    # Add a length for all replacements
-        for ends, replacement in replacements:
-            node_lengths[replacement[0]] = 10
 
     first = True
     with open(filename) as f:
@@ -205,9 +173,6 @@ def get_haplotypes(filename, bubble_chains=None):
                                                                 False) for node in nodes]
                     name = f"{fields[1]}#{fields[2]}#{fields[3]}"
 
-                if bubble_chains is not None:
-                    haplotype = apply_complex_replacements(haplotype,
-                                                           replacements)
                 # Sequence is backward
                 if rev_node(haplotype[-1]) in start or rev_node(haplotype[0]) in end:
                     haplotype = reverse(haplotype)
@@ -230,7 +195,7 @@ def get_haplotypes(filename, bubble_chains=None):
 
 
 def draw_plot(filename, annotations, full_coords,
-              start_node, end_node,
+              start_node, end_node, remove_snps,
               reference="", reference_start=0, reference_end=0,
               output_filename=None, plot_bandage=True):
     if output_filename is None:
@@ -239,6 +204,10 @@ def draw_plot(filename, annotations, full_coords,
 
     if len(haplotypes) == 0:
         log.warning(f"No haplotypes for bubble {full_coords}")
+        return
+
+    if all(map(lambda haplo: len(haplo[1]) < 2, haplotypes)):
+        log.warning(f"For file {filename} all haplotypes contain only a single or no node, not drawing this")
         return
 
     unique_ids = list(node_lengths.keys())
@@ -288,8 +257,6 @@ def draw_plot(filename, annotations, full_coords,
         ax2.plot(full_coords, np.zeros(len(full_coords)), c="black")
         ax2.set_ylim(bottom=-1, top=1)
         for annotation in annotations:
-            order = 0
-            color = "#000000"
             if annotation[2] == "gene" or annotation[2] == "ncRNA_gene":
                 order = 0
                 color = "#cccccc"
@@ -323,6 +290,13 @@ def draw_plot(filename, annotations, full_coords,
         img = mpimg.imread(bandage_image)
         ax1.imshow(img)
         ax1.axis('off')
+        legend_elements = [Patch(facecolor='#00ee00', edgecolor='black', label='Start node'),
+                           Patch(facecolor='#ee0000', edgecolor='black', label='End node'), ]
+        if remove_snps:
+            helper_patch = Patch(fill=False, edgecolor='none', label="Nodes starting with 'C'\nare sections where SNPs\nhave been removed")
+            legend_elements.append(helper_patch)
+        ax1.legend(handles=legend_elements, loc='lower right', frameon=False)
+
 
     max_x = 0
     for h_idx, (_names, haplotype) in enumerate(sorted_haps):
@@ -435,6 +409,7 @@ def main():
     parser.add_argument("-s", "--reference_seq_id",
                         help="seqid in the GFF3 annotation of the reference")
     parser.add_argument("-i", "--include_ins", action="store_true", help="If this is set simple insertions and deletions (so ins/dels consisting of only a single node) will be plotted as well")
+    parser.add_argument("-m", "--smooth", action="store_true", help="Smoothes paths in the bubble by replacing all chains of SNPs with a single node. This can result in nicer and more stream-lined plots, while removing information.")
 
     args = parser.parse_args()
     filename = args.filename
@@ -443,6 +418,7 @@ def main():
     reference_annotation = args.reference_annotation
     reference_seq_id = args.reference_seq_id
     include_ins = args.include_ins
+    remove_snps = args.smooth
 
     if not reference:
         log.warning("WARNING: running without a reference. This won't show you where bubbles are located. To specify a reference sequence use the '-r' parameter")
@@ -510,9 +486,9 @@ def main():
                 continue
             # Check if this is a small bubble consisting of only 1bp nodes
             if bubble_end - bubble_start <= 5:
-                all_are_1bp = all(map(lambda x: node_lengths[str(x)] < 2,
-                                      range(bubble_start + 1,
-                                            bubble_end)))
+                bubble_node_lengths = list(map(lambda x: node_lengths[str(x)], range(bubble_start + 1, bubble_end)))
+                all_are_1bp = all(map(lambda x: x < 2,
+                                      bubble_node_lengths))
                 if all_are_1bp:
                     continue
             ends.append([bubble_start, bubble_end])
@@ -542,8 +518,16 @@ def main():
         if start < reference_start:
             start += reference_start
             end += reference_start
-        draw_plot(chunk_file, annotations, (reference_start, reference_end), nodes[0], nodes[1], reference=reference,
-                  reference_start=start, reference_end=end)
+        if remove_snps:
+            simplified_file = f"{chunk_file}.simplified.gfa"
+            with open(simplified_file, "w") as f:
+                text = simplify_file(chunk_file)
+                f.write(text)
+            draw_plot(simplified_file, annotations, (reference_start, reference_end), nodes[0], nodes[1], remove_snps, reference=reference,
+                      reference_start=start, reference_end=end)
+        else:
+            draw_plot(chunk_file, annotations, (reference_start, reference_end), nodes[0], nodes[1], remove_snps, reference=reference,
+                      reference_start=start, reference_end=end)
 
 
 if __name__ == "__main__":
