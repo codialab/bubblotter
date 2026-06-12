@@ -35,7 +35,6 @@ class GenomicFormatter(ScalarFormatter):
         return f"{tick_val / 1000:g} kb"
 
     def get_offset(self):
-        """Formats the offset text placed at the end of the axis."""
         if not self.offset:
             return ""
 
