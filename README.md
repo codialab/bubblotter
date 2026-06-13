@@ -1,6 +1,6 @@
 # bubblotter
 
-![Otter holding three soap bubbles](docs/bubblotter_logo_cut.png)
+<img src="https://github.com/codialab/bubblotter/blob/main/docs/bubblotter_logo_cut.png?raw=true" alt="Otter holding three soap bubbles" width="244" height="285">
 
 Simple tool for plotting SV bubbles within a GFA file.
 
