@@ -1,4 +1,7 @@
 # bubblotter
+
+![Otter holding three soap bubbles](docs/bubblotter_logo_cut.png)
+
 Simple tool for plotting SV bubbles within a GFA file.
 
 ## Usage
