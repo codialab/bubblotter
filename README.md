@@ -5,15 +5,6 @@
 Simple tool for plotting SV bubbles within a GFA file.
 
 ## Usage
-Requirements:
-- python3
-  - numpy
-  - scipy
-  - matplotlib
-- [vg](https://github.com/vgteam/vg)
-- [Bandage](https://github.com/rrwick/Bandage)
-- [BubbleGun](https://github.com/fawaz-dabbaghieh/bubble_gun) (optional, used for smoothing bubbles)
-
 Subset the graph to your region of interest, e.g. a single gene. This is important as `bubblotter` will try to draw every non-simple* top-level bubble within the graph. So inputting a large file will result in many images. This can be done for example like:
 ```bash
 vg chunk -x "my_graph.gfa" -p 'GRCh38#0#chr8:143418256-143421518' -c 20 -O gfa > roi.gfa
@@ -44,8 +35,26 @@ The `work` directory also contains `.tsv` files containing which haplotype is pa
 - bubbles containing a single insertion or deletion that is less than 50 bps in length (can be turned back on using the parameter `--include_ins`)
 
 ## Installation
+The simplest way to try bubblotter is to install it via conda as this will also install all of its dependencies.
+
+### Using conda
+```bash
+conda install -c bioconda bubblotter
+```
+Now you're ready to go!
 
 ### From source
+Installing from source requires installing all of bubblotters dependencies:
+
+Requirements:
+- python3
+  - numpy
+  - scipy
+  - matplotlib
+- [vg](https://github.com/vgteam/vg)
+- [Bandage](https://github.com/rrwick/Bandage)
+- [BubbleGun](https://github.com/fawaz-dabbaghieh/bubble_gun) (optional, used for smoothing bubbles)
+
 ```bash
 # Clone the repository
 git clone https://github.com/codialab/bubblotter.git
